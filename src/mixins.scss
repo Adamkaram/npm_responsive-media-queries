@@ -1,28 +1,30 @@
-$namespace: '';
-$hiddenKey: '.#{$namespace}hidden';
-$visibleKey: '.#{$namespace}visible';
-$invisibleKey: '.#{$namespace}invisible';
+$rmq_namespace: 'rmq_';
+$rmq_hiddenKey: '.#{$rmq_namespace}hidden';
+$rmq_visibleKey: '.#{$rmq_namespace}visible';
+$rmq_invisibleKey: '.#{$rmq_namespace}invisible';
 
 /*
- * @name: Grid breakpoints
- * @type: SASS MIXINS
- * @description: Define the minimum dimensions at which your layout will change,
+ * @name Grid breakpoints
+ * @type SASS Map
+ * @description Define the minimum dimensions at which your layout will change,
  * adapting to different screen sizes, for use in media queries.
  */
-$grid-breakpoints: (
-  xs: 0,
-  sm: 544px,
-  md: 768px,
-  lg: 992px,
-  xl: 1200px
+$rmq_breakpoints: (
+ xs: 0,
+ sm: 544px,
+ md: 768px,
+ lg: 992px,
+ xl: 1200px,
+ xxl: 1440px
 ) !default;
+$rmq_zero-breakpoint: small !default;
 
 /*
- * @name: _assert-ascending
- * @type: SASS MIXINS
- * @description: Ensure the values in the objects are in ascending order
+ * @name _rmq_assert-ascending
+ * @type SASS MIXINS
+ * @description Ensure the values in the objects are in ascending order
  */
-@mixin _assert-ascending($map, $map-name) {
+@mixin _rmq_assert-ascending($map, $map-name) {
   $prev-key: null;
   $prev-num: null;
   @each $key, $num in $map {
@@ -39,58 +41,58 @@ $grid-breakpoints: (
 }
 
 /*
- * @name: breakpoint-next
- * @type: SASS FUNCTION
- * @description: Breakpoint viewport sizes and media queries.
+ * @name rmq_breakpoint-next
+ * @type SASS FUNCTION
+ * @description Breakpoint viewport sizes and media queries.
  *  Breakpoints are defined as a map of (name: minimum width), order from small to large:
- *  The map defined in the `$grid-breakpoints` global variable is used as the `$breakpoints` argument by default.
- * @example:
+ *  The map defined in the `$rmq_breakpoints` global variable is used as the `$breakpoints` argument by default.
+ * @example
  *  (xs: 0, sm: 544px, md: 768px)
  *  Name of the next breakpoint, or null for the last breakpoint.
- *  breakpoint-next(sm) >> md
- *  breakpoint-next(sm, (xs: 0, sm: 544px, md: 768px)) >> md
- *  breakpoint-next(sm, $breakpoint-names: (xs sm md)) >> md
+ *  rmq_breakpoint-next(sm) >> md
+ *  rmq_breakpoint-next(sm, (xs: 0, sm: 544px, md: 768px)) >> md
+ *  rmq_breakpoint-next(sm, $breakpoint-names: (xs sm md)) >> md
  */
-@function breakpoint-next($name, $breakpoints: $grid-breakpoints, $breakpoint-names: map-keys($breakpoints)) {
+@function rmq_breakpoint-next($name, $breakpoints: $rmq_breakpoints, $breakpoint-names: map-keys($breakpoints)) {
   $n: index($breakpoint-names, $name);
   @return if($n < length($breakpoint-names), nth($breakpoint-names, $n + 1), null);
 }
 
 /*
- * @name: breakpoint-min
- * @type: SASS MIXINS
- * @description: Minimum breakpoint width. Null for the smallest (first) breakpoint.
- * @example:
- *  breakpoint-min(sm, (xs: 0, sm: 544px, md: 768px)) >> 544px
+ * @name rmq_breakpoint-min
+ * @type SASS MIXINS
+ * @description Minimum breakpoint width. Null for the smallest (first) breakpoint.
+ * @example
+ *  rmq_breakpoint-min(sm, (xs: 0, sm: 544px, md: 768px)) >> 544px
  */
-@function breakpoint-min($name, $breakpoints: $grid-breakpoints) {
+@function rmq_breakpoint-min($name, $breakpoints: $rmq_breakpoints) {
   $min: map-get($breakpoints, $name);
   @return if($min != 0, $min, null);
 }
 
 /*
- * @name: breakpoint-max
- * @type: SASS MIXINS
- * @description: Maximum breakpoint width. Null for the largest (last) breakpoint.
- * @example:
+ * @name rmq_breakpoint-max
+ * @type SASS MIXINS
+ * @description Maximum breakpoint width. Null for the largest (last) breakpoint.
+ * @example
  *   The maximum value is calculated as the minimum of the next one less 0.1.
- *   breakpoint-max(sm, (xs: 0, sm: 544px, md: 768px)) >> 767px
+ *   rmq_breakpoint-max(sm, (xs: 0, sm: 544px, md: 768px)) >> 767px
  */
-@function breakpoint-max($name, $breakpoints: $grid-breakpoints) {
-  $next: breakpoint-next($name, $breakpoints);
-  @return if($next, breakpoint-min($next, $breakpoints) - 1px, null);
+@function rmq_breakpoint-max($name, $breakpoints: $rmq_breakpoints) {
+  $next: rmq_breakpoint-next($name, $breakpoints);
+  @return if($next, rmq_breakpoint-min($next, $breakpoints) - 1px, null);
 }
 
 /*
- * @name: media-breakpoint-up
- * @type: SASS MIXINS
- * @description: Maximum breakpoint width. Null for the largest (last) breakpoint.
- * @example:
+ * @name rmq_media-breakpoint-up
+ * @type SASS MIXINS
+ * @description Maximum breakpoint width. Null for the largest (last) breakpoint.
+ * @example
  *   The maximum value is calculated as the minimum of the next one less 0.1.
- *   breakpoint-max(sm, (xs: 0, sm: 544px, md: 768px)) >> 767px
+ *   rmq_breakpoint-max(sm, (xs: 0, sm: 544px, md: 768px)) >> 767px
  */
-@mixin media-breakpoint-up($name, $breakpoints: $grid-breakpoints) {
-  $min: breakpoint-min($name, $breakpoints);
+@mixin rmq_media-breakpoint-up($name, $breakpoints: $rmq_breakpoints) {
+  $min: rmq_breakpoint-min($name, $breakpoints);
   @if $min {
     @media (min-width: $min) {
       @content;
@@ -101,13 +103,13 @@ $grid-breakpoints: (
 }
 
 /*
- * @name: media-breakpoint-down
- * @type: SASS MIXINS
- * @description: Media of at most the maximum breakpoint width. No query for the largest breakpoint.
+ * @name rmq_media-breakpoint-down
+ * @type SASS MIXINS
+ * @description Media of at most the maximum breakpoint width. No query for the largest breakpoint.
  *   Makes the @content apply to the given breakpoint and narrower.
  */
-@mixin media-breakpoint-down($name, $breakpoints: $grid-breakpoints) {
-  $max: breakpoint-max($name, $breakpoints);
+@mixin rmq_media-breakpoint-down($name, $breakpoints: $rmq_breakpoints) {
+  $max: rmq_breakpoint-max($name, $breakpoints);
   @if $max {
     @media (max-width: $max) {
       @content;
@@ -118,65 +120,469 @@ $grid-breakpoints: (
 }
 
 /*
- * @name: media-breakpoint-only
- * @type: SASS MIXINS
- * @description: Media between the breakpoint's minimum and maximum widths.
+ * @name rmq_media-breakpoint-only
+ * @type SASS MIXINS
+ * @description Media between the breakpoint's minimum and maximum widths.
  *  No minimum for the smallest breakpoint, and no maximum for the largest one.
  *  Makes the @content apply only to the given breakpoint, not viewports any wider or narrower.
  */
-@mixin media-breakpoint-only($name, $breakpoints: $grid-breakpoints) {
-  @include media-breakpoint-up($name, $breakpoints) {
-    @include media-breakpoint-down($name, $breakpoints) {
+@mixin rmq_media-breakpoint-only($name, $breakpoints: $rmq_breakpoints) {
+  @include rmq_media-breakpoint-up($name, $breakpoints) {
+    @include rmq_media-breakpoint-down($name, $breakpoints) {
       @content;
     }
   }
 }
 
 /*
- * @name: media-breakpoint-between
- * @type: SASS MIXINS
- * @description: Media that spans multiple breakpoint widths.
+ * @name rmq_media-breakpoint-between
+ * @type SASS MIXINS
+ * @description Media that spans multiple breakpoint widths.
  *  Makes the @content apply between the min and max breakpoints
  */
-@mixin media-breakpoint-between($lower, $upper, $breakpoints: $grid-breakpoints) {
-  @include media-breakpoint-up($lower, $breakpoints) {
-    @include media-breakpoint-down($upper, $breakpoints) {
+@mixin rmq_media-breakpoint-between($lower, $upper, $breakpoints: $rmq_breakpoints) {
+  @include rmq_media-breakpoint-up($lower, $breakpoints) {
+    @include rmq_media-breakpoint-down($upper, $breakpoints) {
       @content;
     }
   }
 }
 
 /*
- * @name: Responsive visibility utilities
- * @description: Create hidden classes
+ * @name rmq_to-rem
+ * @description Converts a pixel value to matching rem value. *Any* value passed, regardless of unit.
+ * @param {Number} $value - Pixel value to convert.
+ * @param {Number} $base [null] - Base for pixel conversion.
+ * @returns {Number} A number in rems, calculated based on the given value and the base pixel value. rem values are passed through as is.
  */
-@include _assert-ascending($grid-breakpoints, "$grid-breakpoints");
-@each $bp in map-keys($grid-breakpoints) {
-  #{$hiddenKey}-#{$bp}-up {
-    @include media-breakpoint-up($bp) {
-      display: none !important;
+@function rmq_to-rem($value, $base: null) {
+  // Check if the value is a number
+  @if type-of($value) != 'number' {
+    @warn inspect($value) + ' was passed to rmq_rem-calc(), which is not a number.';
+    @return $value;
+  }
+
+  // Calculate rem if units for $value is not rem
+  @if unit($value) != 'rem' {
+    $value: rmq_strip-unit($value) / rmq_strip-unit($base) * 1rem;
+  }
+
+  // Turn 0rem into 0
+  @if $value == 0rem {
+    $value: 0;
+  }
+
+  @return $value;
+}
+
+/*
+ * @name rmq_strip-unit
+ * @description Removes the unit (e.g. px, em, rem) from a value, returning the number only.
+ * @param {Number} $num - Number to strip unit from.
+ * @returns {Number} The same number, sans unit.
+ */
+@function rmq_strip-unit($num) {
+  @return $num / ($num * 0 + 1);
+}
+
+/*
+ * @name rmq_rem-calc
+ * @description Converts one or more pixel values into matching rem values.
+ * @param {Number|List} $values - One or more values to convert. Be sure to separate them with spaces and not commas. If you need to convert a comma-separated list, wrap the list in parentheses.
+ * @param {Number} $base [null] - The base value to use when calculating the `rem`. If you're using Foundation out of the box, this is 16px. If this parameter is `null`, the function will reference the `$base-font-size` variable as the base.
+ * @returns {List} A list of converted values.
+ */
+@function rmq_rem-calc($values, $base: null) {
+  $rem-values: ();
+  $count: length($values);
+
+  // If no base is defined, defer to the global font size
+  @if $base == null {
+    $base: $global-font-size;
+  }
+
+  // If the base font size is a %, then multiply it by 16px
+  // This is because 100% font size = 16px in most all browsers
+  @if unit($base) == '%' {
+    $base: ($base / 100%) * 16px;
+  }
+
+  // Using rem as base allows correct scaling
+  @if unit($base) == 'rem' {
+    $base: rmq_strip-unit($base) * 16px;
+  }
+
+  @if $count == 1 {
+    @return rmq_to-rem($values, $base);
+  }
+
+  @for $i from 1 through $count {
+    $rem-values: append($rem-values, rmq_to-rem(nth($values, $i), $base));
+  }
+
+  @return $rem-values;
+}
+
+/*
+ * @name rmq_bp-to-em
+ * @description Converts a unitless, pixel, or rem value to em, for use in breakpoints.
+ */
+@function rmq_bp-to-em($value) {
+  // Pixel and unitless values are converted to rems
+  @if unit($value) == 'px' or unitless($value) {
+    $value: rmq_rem-calc($value, $base: 16px);
+  }
+  // Then the value is converted to ems
+  @return rmq_strip-unit($value) * 1em;
+}
+
+/*
+ * @name rmq_breakpoint
+ * @description Generates a media query string matching the input value.
+ * @param {Keyword|Number} $val [small] - Breakpoint name, or px, rem, or em value to process.
+ */
+@function rmq_breakpoint($val: $rmq_zero-breakpoint) {
+  // Size or keyword
+  $bp: nth($val, 1);
+  // Value for max-width media queries
+  $bp-max: 0;
+  // Direction of media query (up, down, or only)
+  $dir: if(length($val) > 1, nth($val, 2), up);
+  // Eventual output
+  $str: '';
+  // Is it a named media query?
+  $named: false;
+
+  // Orientation media queries have a unique syntax
+  @if $bp == 'landscape' or $bp == 'portrait' {
+    @return '(orientation: #{$bp})';
+  }
+  @else if $bp == 'retina' {
+    @return '(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)';
+  }
+
+  // Try to pull a named breakpoint out of the $rmq_breakpoints map
+  @if type-of($bp) == 'string' {
+    @if map-has-key($rmq_breakpoints, $bp) {
+      @if $dir == 'only' or $dir == 'down' {
+        $bp-max: rmq_map-next($rmq_breakpoints, $bp);
+      }
+
+      $bp: map-get($rmq_breakpoints, $bp);
+      $named: true;
+    }
+    @else {
+      $bp: 0;
+      @warn 'rmq_breakpoint(): "#{$val}" is not defined in your $rmq_breakpoints setting.';
     }
   }
-  #{$hiddenKey}-#{$bp}-down {
-    @include media-breakpoint-down($bp) {
-      display: none !important;
+
+  // Convert any pixel, rem, or unitless value to em
+  $bp: rmq_bp-to-em($bp);
+  @if $bp-max {
+    $bp-max: rmq_bp-to-em($bp-max) - (1/16);
+  }
+
+  // Conditions to skip media query creation
+  // - It's a named breakpoint that resolved to "0 down" or "0 up"
+  // - It's a numeric breakpoint that resolved to "0 " + anything
+  @if $bp > 0em or $dir == 'only' or $dir == 'down' {
+    // `only` ranges use the format `(min-width: n) and (max-width: n)`
+    @if $dir == 'only' {
+      // Only named media queries can have an "only" range
+      @if $named == true {
+        // Only use "min-width" if the floor is greater than 0
+        @if $bp > 0em {
+          $str: $str + '(min-width: #{$bp})';
+
+          // Only add "and" to the media query if there's a ceiling
+          @if $bp-max != null {
+            $str: $str + ' and ';
+          }
+        }
+
+        // Only use "max-width" if there's a ceiling
+        @if $bp-max != null {
+          $str: $str + '(max-width: #{$bp-max})';
+        }
+      }
+      @else {
+        @warn 'rmq_breakpoint(): Only named media queries can have an `only` range.';
+      }
+    }
+
+    // `down` ranges use the format `(max-width: n)`
+    @else if $dir == 'down' {
+      $max: if($named, $bp-max, $bp);
+
+      // Skip media query creation if input value is exactly "0 down",
+      // unless the function was called as "small down", in which case it's just "small only"
+      @if $named or $bp > 0em {
+        @if $max != null {
+          $str: $str + '(max-width: #{$max})';
+        }
+      }
+    }
+
+    // `up` ranges use the format `(min-width: n)`
+    @else if $bp > 0em {
+      $str: $str + '(min-width: #{$bp})';
+    }
+  }
+
+  @return $str;
+}
+
+/*
+ * @name rmq_breakpoint
+ * @description Wraps a media query around the content you put inside the mixin. This mixin accepts a number of values
+ * @param {Keyword|Number} $value - Breakpoint name, or px, rem, or em value to process.
+ * @output If the breakpoint is "0px and larger", outputs the content as-is. Otherwise, outputs the content wrapped in a media query.
+ * @notes
+ * - If a string is passed, the mixin will look for it in the `$rmq_breakpoints` map, and use a media query there.
+ * - If a pixel value is passed, it will be converted to an em value using `$global-font-size` as the base.
+ * - If a rem value is passed, the unit will be changed to em.
+ * - If an em value is passed, the value will be used as-is.
+ */
+
+@mixin rmq_breakpoint($value) {
+  $str: rmq_breakpoint($value);
+
+  // If $str is still an empty string, no media query is needed
+  @if $str == '' {
+    @content;
+  }
+
+  // Otherwise, wrap the content in a media query
+  @else {
+    @media screen and #{$str} {
+      @content;
     }
   }
 }
 
 /*
- * @name: invisible
- * @description: Make element invisible but still affect margin & padding
+ * @name rmq_map-next
+ * @description Find the next key in a map.
+ * @param {Map} $map - Map to traverse.
+ * @param {Mixed} $key - Key to use as a starting point.
+ * @returns {Mixed} The value for the key after `$key`, if `$key` was found. If `$key` was not found, or `$key` was the last value in the map, returns `null`.
  */
-#{$invisibleKey} {
+@function rmq_map-next($map, $key) {
+
+  // Store the keys of the map as a list
+  $values: map-keys($map);
+
+  $i: 0;
+
+  // If the Key Exists, Get the index of the key within the map and add 1 to it for the next breakpoint in the map
+  @if (map-has-key($map, $key)) {
+    $i: index($values, $key) + 1;
+  }
+
+  // If the key doesn't exist, or it's the last key in the map, return null
+  @if ($i > length($map) or $i == 0) {
+    @return null;
+  }
+  // Otherwise, return the value
+  @else {
+    @return map-get($map, nth($values, $i));
+  }
+}
+
+/*
+ * @name rmq_above
+ */
+@mixin rmq_above($value) {
+  $str: rmq_breakpoint($value);
+
+  // If $str is still an empty string, no media query is needed
+  @if $str == '' {
+    @content;
+  }
+
+  // Otherwise, wrap the content in a media query
+  @else {
+    @media screen and #{$str} {
+      @content;
+    }
+  }
+}
+
+/********************************** Devices ***********************************/
+
+/*
+ * @name rmq_aspect-ratio-iphone5-up
+ */
+@mixin rmq_aspect-ratio-iphone5-up() {
+  @media screen and (device-aspect-ratio: 2/3) {
+    @content;
+  }
+}
+
+/*
+ * @name rmq_aspect-ratio-iphone5
+ */
+@mixin rmq_aspect-ratio-iphone5() {
+  @media screen and (device-aspect-ratio: 40/71) {
+    @content;
+  }
+}
+
+/*
+ * @name rmq_aspect-ratio-iphone6
+ */
+@mixin rmq_aspect-ratio-iphone6() {
+  @media screen and (device-aspect-ratio: 375/667) {
+    @content;
+  }
+}
+
+/*
+ * @name rmq_aspect-ratio-iphone6plus
+ */
+@mixin rmq_aspect-ratio-iphone6plus() {
+  @media screen and (device-aspect-ratio: 16/9) {
+    @content;
+  }
+}
+
+/*
+ * @name rmq_aspect-ratio-iphone6plus
+ */
+@mixin rmq_aspect-ratio-ipad() {
+  @media screen and (device-aspect-ratio: 3/4) {
+    @content;
+  }
+}
+
+/*
+ * @name rmq_tv
+ */
+@mixin rmq_tv-down() {
+  @media screen and (min-width: 1824px) {
+    @content;
+  }
+}
+
+/*
+ * @name rmq_desktop
+ */
+@mixin rmq_desktop-down() {
+  @media screen and (min-width: 980px) {
+    @content;
+  }
+}
+
+/*
+ * @name rmq_tablet
+ */
+@mixin rmq_tablet-down() {
+  @media screen and (min-width: 979px) {
+    @content;
+  }
+}
+
+/*
+ * @name rmq_mobile
+ */
+@mixin rmq_mobile-down() {
+  @media screen and (max-width: 500px) {
+    @content;
+  }
+}
+
+@mixin rmq_device($width, $height, $pageOrientation:'', $str: '') {
+  @if $pageOrientation == 'landscape' or $pageOrientation == 'l' {
+    @media only screen and (min-device-width: $width) and (max-device-height: $height) and (orientation : landscape) #{$str} {
+      @content;
+    }
+  } @else if $pageOrientation == 'portrait' or $pageOrientation == 'p'  {
+    @media only screen and (min-device-width: $width) and (max-device-height: $height) and (orientation : portrait) #{$str} {
+      @content;
+    }
+  } @else {
+    @media only screen and (min-device-width : $width) and (max-device-width : $height) {
+      @content;
+    }
+  }
+}
+
+/********************************** Responsive visibility utilities ***********************************/
+
+/*
+ * @name Generator
+ * @description Create classes
+ */
+@if nth(map-values($rmq_breakpoints), 1) != 0 {
+ @error 'Your smallest breakpoint (defined in $rmq_breakpoints) must be set to "0".';
+} @else {
+ $rmq_zero-breakpoint: nth(map-keys($rmq_breakpoints), 1);
+}
+
+@include _rmq_assert-ascending($rmq_breakpoints, "$rmq_breakpoints");
+@each $bp in map-keys($rmq_breakpoints) {
+  #{$rmq_hiddenKey}-#{$bp}-below {
+    @include rmq_media-breakpoint-up($bp) {
+      display: none !important;
+    }
+  }
+  #{$rmq_hiddenKey}-#{$bp}-above {
+    @include rmq_media-breakpoint-down($bp) {
+      display: none !important;
+    }
+  }
+}
+
+$rmq_support_devices: (
+  'samsung_galaxy_s5': ('width': 360px, 'height': 640px, 'append': 'and (-webkit-device-pixel-ratio: 3)'),
+  'samsung_galaxy_s4': ('width': 320px, 'height': 640px, 'append': 'and (-webkit-device-pixel-ratio: 3)'),
+  'samsung_galaxy_s3': ('width': 320px, 'height': 640px, 'append': 'and (-webkit-device-pixel-ratio: 3)'),
+  'iphone6': ('width': 375px, 'height': 667px, 'append': 'and (-webkit-device-pixel-ratio: 2)'),
+  'iphone6plus': ('width': 414px, 'height': 736px, 'append': 'and (-webkit-device-pixel-ratio: 2)'),
+  'iphone5': ('width': 320px, 'height': 568px, 'append': 'and (-webkit-device-pixel-ratio: 2)'),
+  'iphone4': ('width': 320px, 'height': 480px, 'append': 'and (-webkit-min-device-pixel-ratio : 2)'),
+  'iphone3': ('width': 768px, 'height': 1024px, 'append': 'and (-webkit-min-device-pixel-ratio : 2)'),
+  'ipad': ('width': 768px, 'height': 1024px, 'append': ''),
+) !default;
+
+@each $deviceKey in map-keys($rmq_support_devices) {
+  $config: map-get($rmq_support_devices, $deviceKey);
+  $width: map-get($config, 'width');
+  $height: map-get($config, 'height');
+  $append: map-get($config, 'append');
+  .#{$rmq_namespace}#{$deviceKey} {
+    @include rmq_device($width, $height , '', $append) {
+      display: block !important;
+    }
+  }
+  .#{$rmq_namespace}#{$deviceKey}-landscape {
+    @include rmq_device($width, $height , 'landscape', $append) {
+      display: block !important;
+    }
+  }
+  .#{$rmq_namespace}#{$deviceKey}-portrait {
+    @include rmq_device($width, $height , 'portrait', $append) {
+      display: block !important;
+    }
+  }
+}
+
+
+
+/*
+ * @name invisible
+ * @description Make element invisible but still affect margin & padding
+ */
+#{$rmq_invisibleKey} {
   visibility: hidden !important;
 }
 
 /*
- * @name: Print Block
- * @description: Media queries are placed on the inside to be mixin-friendly.
+ * @name Print Block
+ * @description Media queries are placed on the inside to be mixin-friendly.
  */
-#{$visibleKey}-print-block {
+#{$rmq_visibleKey}-print-block {
   display: none !important;
   @media print {
     display: block !important;
@@ -184,10 +590,10 @@ $grid-breakpoints: (
 }
 
 /*
- * @name: Print visible inline
- * @description: Media queries are placed on the inside to be mixin-friendly.
+ * @name Print visible inline
+ * @description Media queries are placed on the inside to be mixin-friendly.
  */
-#{$visibleKey}-print-inline {
+#{$rmq_visibleKey}-print-inline {
   display: none !important;
   @media print {
     display: inline !important;
@@ -195,10 +601,10 @@ $grid-breakpoints: (
 }
 
 /*
- * @name: Print visible inline-block
- * @description: Media queries are placed on the inside to be mixin-friendly.
+ * @name Print visible inline-block
+ * @description Media queries are placed on the inside to be mixin-friendly.
  */
-#{$visibleKey}-print-inline-block {
+#{$rmq_visibleKey}-print-inline-block {
   display: none !important;
   @media print {
     display: inline-block !important;
@@ -206,10 +612,10 @@ $grid-breakpoints: (
 }
 
 /*
- * @name: Print Hide
- * @description: Media queries are placed on the inside to be mixin-friendly.
+ * @name Print Hide
+ * @description Media queries are placed on the inside to be mixin-friendly.
  */
-#{$hiddenKey}-print {
+#{$rmq_hiddenKey}-print {
   @media print {
     display: none !important;
   }

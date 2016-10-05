@@ -1,0 +1,49 @@
+@import '../src/mixins';
+
+.element-landscape {
+  @include rmq_breakpoint(landscape) {
+    display: block;
+  }
+}
+
+.element-retina {
+  @include rmq_breakpoint(retina) {
+    display: block;
+  }
+}
+
+.element-320px {
+  @include rmq_above(320px) {
+    display: block;
+  }
+}
+
+.element-320 {
+  @include rmq_above(320) {
+    display: block;
+  }
+}
+
+.element-40rem {
+  @include rmq_above(40rem) {
+    display: block;
+  }
+}
+
+.element-md-down {
+  @include rmq_breakpoint(md down) {
+    display: block;
+  }
+}
+
+.element-md-only {
+  @include rmq_breakpoint(md only) {
+    display: block;
+  }
+}
+
+.element-md {
+  @include rmq_breakpoint(md) {
+    display: block;
+  }
+}
