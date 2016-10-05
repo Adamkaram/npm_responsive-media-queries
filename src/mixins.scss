@@ -1,0 +1,216 @@
+$namespace: '';
+$hiddenKey: '.#{$namespace}hidden';
+$visibleKey: '.#{$namespace}visible';
+$invisibleKey: '.#{$namespace}invisible';
+
+/*
+ * @name: Grid breakpoints
+ * @type: SASS MIXINS
+ * @description: Define the minimum dimensions at which your layout will change,
+ * adapting to different screen sizes, for use in media queries.
+ */
+$grid-breakpoints: (
+  xs: 0,
+  sm: 544px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px
+) !default;
+
+/*
+ * @name: _assert-ascending
+ * @type: SASS MIXINS
+ * @description: Ensure the values in the objects are in ascending order
+ */
+@mixin _assert-ascending($map, $map-name) {
+  $prev-key: null;
+  $prev-num: null;
+  @each $key, $num in $map {
+    @if $prev-num == null {
+      // Do nothing
+    } @else if not comparable($prev-num, $num) {
+      @warn "Potentially invalid value for #{$map-name}: This map must be in ascending order, but key '#{$key}' has value #{$num} whose unit makes it incomparable to #{$prev-num}, the value of the previous key '#{$prev-key}' !";
+    } @else if $prev-num >= $num {
+      @warn "Invalid value for #{$map-name}: This map must be in ascending order, but key '#{$key}' has value #{$num} which isn't greater than #{$prev-num}, the value of the previous key '#{$prev-key}' !";
+    }
+    $prev-key: $key;
+    $prev-num: $num;
+  }
+}
+
+/*
+ * @name: breakpoint-next
+ * @type: SASS FUNCTION
+ * @description: Breakpoint viewport sizes and media queries.
+ *  Breakpoints are defined as a map of (name: minimum width), order from small to large:
+ *  The map defined in the `$grid-breakpoints` global variable is used as the `$breakpoints` argument by default.
+ * @example:
+ *  (xs: 0, sm: 544px, md: 768px)
+ *  Name of the next breakpoint, or null for the last breakpoint.
+ *  breakpoint-next(sm) >> md
+ *  breakpoint-next(sm, (xs: 0, sm: 544px, md: 768px)) >> md
+ *  breakpoint-next(sm, $breakpoint-names: (xs sm md)) >> md
+ */
+@function breakpoint-next($name, $breakpoints: $grid-breakpoints, $breakpoint-names: map-keys($breakpoints)) {
+  $n: index($breakpoint-names, $name);
+  @return if($n < length($breakpoint-names), nth($breakpoint-names, $n + 1), null);
+}
+
+/*
+ * @name: breakpoint-min
+ * @type: SASS MIXINS
+ * @description: Minimum breakpoint width. Null for the smallest (first) breakpoint.
+ * @example:
+ *  breakpoint-min(sm, (xs: 0, sm: 544px, md: 768px)) >> 544px
+ */
+@function breakpoint-min($name, $breakpoints: $grid-breakpoints) {
+  $min: map-get($breakpoints, $name);
+  @return if($min != 0, $min, null);
+}
+
+/*
+ * @name: breakpoint-max
+ * @type: SASS MIXINS
+ * @description: Maximum breakpoint width. Null for the largest (last) breakpoint.
+ * @example:
+ *   The maximum value is calculated as the minimum of the next one less 0.1.
+ *   breakpoint-max(sm, (xs: 0, sm: 544px, md: 768px)) >> 767px
+ */
+@function breakpoint-max($name, $breakpoints: $grid-breakpoints) {
+  $next: breakpoint-next($name, $breakpoints);
+  @return if($next, breakpoint-min($next, $breakpoints) - 1px, null);
+}
+
+/*
+ * @name: media-breakpoint-up
+ * @type: SASS MIXINS
+ * @description: Maximum breakpoint width. Null for the largest (last) breakpoint.
+ * @example:
+ *   The maximum value is calculated as the minimum of the next one less 0.1.
+ *   breakpoint-max(sm, (xs: 0, sm: 544px, md: 768px)) >> 767px
+ */
+@mixin media-breakpoint-up($name, $breakpoints: $grid-breakpoints) {
+  $min: breakpoint-min($name, $breakpoints);
+  @if $min {
+    @media (min-width: $min) {
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+/*
+ * @name: media-breakpoint-down
+ * @type: SASS MIXINS
+ * @description: Media of at most the maximum breakpoint width. No query for the largest breakpoint.
+ *   Makes the @content apply to the given breakpoint and narrower.
+ */
+@mixin media-breakpoint-down($name, $breakpoints: $grid-breakpoints) {
+  $max: breakpoint-max($name, $breakpoints);
+  @if $max {
+    @media (max-width: $max) {
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+/*
+ * @name: media-breakpoint-only
+ * @type: SASS MIXINS
+ * @description: Media between the breakpoint's minimum and maximum widths.
+ *  No minimum for the smallest breakpoint, and no maximum for the largest one.
+ *  Makes the @content apply only to the given breakpoint, not viewports any wider or narrower.
+ */
+@mixin media-breakpoint-only($name, $breakpoints: $grid-breakpoints) {
+  @include media-breakpoint-up($name, $breakpoints) {
+    @include media-breakpoint-down($name, $breakpoints) {
+      @content;
+    }
+  }
+}
+
+/*
+ * @name: media-breakpoint-between
+ * @type: SASS MIXINS
+ * @description: Media that spans multiple breakpoint widths.
+ *  Makes the @content apply between the min and max breakpoints
+ */
+@mixin media-breakpoint-between($lower, $upper, $breakpoints: $grid-breakpoints) {
+  @include media-breakpoint-up($lower, $breakpoints) {
+    @include media-breakpoint-down($upper, $breakpoints) {
+      @content;
+    }
+  }
+}
+
+/*
+ * @name: Responsive visibility utilities
+ * @description: Create hidden classes
+ */
+@include _assert-ascending($grid-breakpoints, "$grid-breakpoints");
+@each $bp in map-keys($grid-breakpoints) {
+  #{$hiddenKey}-#{$bp}-up {
+    @include media-breakpoint-up($bp) {
+      display: none !important;
+    }
+  }
+  #{$hiddenKey}-#{$bp}-down {
+    @include media-breakpoint-down($bp) {
+      display: none !important;
+    }
+  }
+}
+
+/*
+ * @name: invisible
+ * @description: Make element invisible but still affect margin & padding
+ */
+#{$invisibleKey} {
+  visibility: hidden !important;
+}
+
+/*
+ * @name: Print Block
+ * @description: Media queries are placed on the inside to be mixin-friendly.
+ */
+#{$visibleKey}-print-block {
+  display: none !important;
+  @media print {
+    display: block !important;
+  }
+}
+
+/*
+ * @name: Print visible inline
+ * @description: Media queries are placed on the inside to be mixin-friendly.
+ */
+#{$visibleKey}-print-inline {
+  display: none !important;
+  @media print {
+    display: inline !important;
+  }
+}
+
+/*
+ * @name: Print visible inline-block
+ * @description: Media queries are placed on the inside to be mixin-friendly.
+ */
+#{$visibleKey}-print-inline-block {
+  display: none !important;
+  @media print {
+    display: inline-block !important;
+  }
+}
+
+/*
+ * @name: Print Hide
+ * @description: Media queries are placed on the inside to be mixin-friendly.
+ */
+#{$hiddenKey}-print {
+  @media print {
+    display: none !important;
+  }
+}
